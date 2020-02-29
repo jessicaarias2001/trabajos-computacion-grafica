@@ -1,0 +1,134 @@
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script>
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+                        
+                        for(var i=-65;i<65;i++) {
+                          for(var j=0;j<70;j++) {
+                        var geometry = new THREE.BoxGeometry(1,1,1);
+			 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			 var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+                        cube.position.x=i*2;
+                        cube.position.y=j*2;
+                        cube.position.z=-90;
+                             } 
+                        }
+                         for(var i=-65;i<65;i++) {
+                          for(var j=0;j<70;j++) {
+                        var geometry = new THREE.BoxGeometry(1,1,1);
+			 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			 var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+                        cube.position.x=i*2;
+                        cube.position.y=j*2;
+                        cube.position.z=90;
+                             } 
+                        }
+
+                         for(var i=-45;i<45;i++) {
+                          for(var j=0;j<70;j++) {
+                        var geometry = new THREE.BoxGeometry(1,1,1);
+			 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			 var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+                        cube.position.x=130;
+                        cube.position.y=j*2;
+                        cube.position.z=i*2;
+                             } 
+                        }
+                         for(var i=-45;i<45;i++) {
+                          for(var j=-65;j<65;j++) {
+                        var geometry = new THREE.BoxGeometry(1,1,1);
+			 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			 var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+                        cube.position.x=j*2;
+                        cube.position.y=140;
+                        cube.position.z=i*2;
+                             } 
+                        }
+                   
+                          
+                        for(var i=0;i<180;i++) {
+                          for(var j=0;j<180;j++) {
+                        var geometry = new THREE.BoxGeometry(1,1,1);
+			 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			 var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+                        cube.position.x=50*Math.sin(j)*Math.cos(i);
+                        cube.position.y=50*Math.cos(j)+140;
+                        cube.position.z=50*Math.sin(j)*Math.sin(i);
+                             } 
+                        }
+                        for(var i=0;i<180;i++) {
+                          for(var j=0;j<180;j++) {
+                        var geometry = new THREE.BoxGeometry(1,1,1);
+			 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			 var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+                        cube.position.x=30*Math.sin(j)*Math.cos(i)+200;
+                        cube.position.y=30*Math.cos(j)+200;
+                        cube.position.z=30*Math.sin(j)*Math.sin(i)+200;
+                             } 
+                        }
+                        for(var i=0;i<180;i++) {
+                          for(var j=0;j<180;j++) {
+                        var geometry = new THREE.BoxGeometry(1,1,1);
+			 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			 var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+                        cube.position.x=30*Math.sin(j)*Math.cos(i)-200;
+                        cube.position.y=30*Math.cos(j)+200;
+                        cube.position.z=30*Math.sin(j)*Math.sin(i)+200;
+                             } 
+                        }
+                        for(var i=0;i<100;i++) {
+                          for(var j=0;j<360;j++) {
+                             var geometry = new THREE.BoxGeometry(1,1,1);
+			  var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			  var cube = new THREE.Mesh( geometry, material );
+			  scene.add( cube );
+                         
+                         cube.position.x=30*Math.cos(j)+200;
+                         cube.position.z=30*Math.sin(j)+200;
+                         cube.position.y=i*2;
+                             } 
+                        }    
+                        for(var i=0;i<100;i++) {
+                          for(var j=0;j<360;j++) {
+                             var geometry = new THREE.BoxGeometry(1,1,1);
+			  var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			  var cube = new THREE.Mesh( geometry, material );
+			  scene.add( cube );
+                         
+                         cube.position.x=30*Math.cos(j)-200;
+                         cube.position.z=30*Math.sin(j)+200;
+                         cube.position.y=i*2;
+                             } 
+                        }                     
+			camera.position.z = 300;
+                        camera.position.x = 200;
+                        camera.position.y = 300;
+                        camera.rotation.x=-1;
+                        camera.rotation.y=0.5;
+                        camera.rotation.z=0.5;
+                        renderer.render( scene, camera );
+
+		</script>
+	</body>
+</html>
+
