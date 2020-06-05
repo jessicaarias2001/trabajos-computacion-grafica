@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ILUMINACION</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
+	<script src="js/csg.js"></script>
+	<script src="js/THREE.CSG.js"></script>
+    <script>
+		var scene, aspect, camera, renderer, controls;
+		var geometry1, geometry2;
+		var hips, body, head;
+		var  rightLeg;
+		var  leftLeg;
+		var startTime = Date.now();
+		
+		var axesHelper1 = new THREE.AxesHelper( 1 );
+				
+		var upArrow = false;
+		var downArrow = false;
+		var leftArrow = false;
+		var rightArrow = false;
+		var scaleUp = false;
+		var scaleDown = false;
+		
+		var thetaSum=0;
+		var positivo=false;
+		
+		init();
+		animate();
+		
+		function init(){
+			//INICIALIZACIÓN
+			
+			
+	        scene = new THREE.Scene();
+	        aspect = window.innerWidth / window.innerHeight;
+	        camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000);
+	        renderer = new THREE.WebGLRenderer();
+	        renderer.setSize( window.innerWidth, window.innerHeight );
+	        document.body.appendChild( renderer.domElement );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+			
+			//ELEMENTOS COMUNES
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+		  	var color = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA3333 );
+		  	var colorG = new THREE.Color( 0x33AA33 );
+		  	var colorB = new THREE.Color( 0x333366 );
+			
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+			scene.add( axesHelper );
+			
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color, color );
+			scene.add( gridHelperXZ );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+
+            // ILUMINACIÓN AMBIENTE
+            var ambient = new THREE.AmbientLight( 0xFC951A, 1 );
+            scene.add( ambient );
+
+            var	luz = new THREE.PointLight( 0x0620FF ,5, 10, 2);
+			var	luz2 = new THREE.PointLight( 0x0620FF,5, 10, 2 );
+            luz.position.set(0, 2.5, 5);
+			luz2.position.set(0, 3.5, -5);
+			scene.add( luz );
+			scene.add( luz2  );
+			/*var pointLightHelper = new THREE.PointLightHelper( luz);
+scene.add( pointLightHelper );*/
+
+
+			
+			var esferageometry = new THREE.SphereBufferGeometry(.2, 8, 8 );
+			var	bulbLight = new THREE.SpotLight( 0x0620FF,5, 2, 2 );
+			var	bulbMat = new THREE.MeshStandardMaterial( {
+					emissive: 0x0620FF,
+					emissiveIntensity: 3,
+					color: 0x0620FF
+					//hemiIrradiance: Object.keys( 5000 )
+				} );
+				bulbLight.add( new THREE.Mesh( esferageometry, bulbMat ) );
+				bulbLight.position.set( 1.4, 3.5, -1.2);
+				bulbLight.castShadow = true;
+				bulbLight.rotation.y = 120*Math.PI/180;
+			    bulbLight.rotation.x= -30*Math.PI/180;
+				var bulbLight2=bulbLight.clone();
+				bulbLight2.position.set(1.4, 3.5, 1.2);
+				var bulbLight3=bulbLight.clone();
+				bulbLight3.position.set(-1.4, 3.5, -1.2);
+				var bulbLight4=bulbLight.clone();
+				bulbLight4.position.set(-1.4, 3.5, 1.2);
+
+
+				scene.add( bulbLight );
+				scene.add( bulbLight2 );
+				scene.add( bulbLight3 );
+				scene.add( bulbLight4 );
+			
+            // LUCES DE LAS LLANTAS
+			var toroidegeometry2 = new THREE.TorusBufferGeometry( .18, .05, 16, 50 );
+            var cilindrogeometry = new THREE.CylinderBufferGeometry( 2.5, 2.5, .5, 32 );
+			var cilindrogeometry2 = new THREE.CylinderBufferGeometry( .1, .1, 3.5, 32 );
+			var boxGeometry3 = new THREE.BoxGeometry( .5, .1, 2 );
+
+			var	bulbLight = new THREE.PointLight( 0x0620FF,5, 2, 2 );
+            
+            var material_tarima= new THREE.MeshStandardMaterial( { color: 0xFF2300, roughness: 10, opacity: 0.5  } );
+			var material_postes= new THREE.MeshStandardMaterial( { color: 0xB0908B, roughness: 10, opacity: 0.5  } );
+			var material_luces= new THREE.MeshStandardMaterial( { color: 0xFFFFFF, roughness: 10, opacity: 0.5  } );
+
+
+            var tarima = new THREE.Mesh( cilindrogeometry,material_tarima );
+			var poste = new THREE.Mesh( cilindrogeometry2,material_postes );
+			var poste_arriba= new THREE.Mesh(  boxGeometry3,material_postes );
+			
+			poste_arriba.translateY(1.8);
+			poste_arriba.rotation.z= -45*Math.PI/180;
+			poste_arriba.rotation.y= -50*Math.PI/180;
+
+			//SPOT LIGHTS
+			var spotLight = new THREE.SpotLight( 0x7898D8 );
+			spotLight.angle =20*Math.PI/180;
+			spotLight.distance =10;
+			poste_arriba.add(spotLight );
+			spotLight.translateY(-1);
+			poste.add(poste_arriba);
+			
+			var poste2=poste.clone();
+			var poste3=poste.clone();
+			var poste4=poste.clone();
+			/*var spotLightHelper = new THREE.SpotLightHelper( spotLight );
+            scene.add( spotLightHelper );*/
+			
+
+            poste.translateY(1.8).translateZ(1.4).translateX(1.4);
+			poste2.translateY(1.8).translateZ(-1.4).translateX(-1.4);
+			poste2.rotation.y= 180*Math.PI/180;
+			poste3.translateY(1.8).translateZ(1.4).translateX(-1.4);
+			poste3.rotation.y=-90*Math.PI/180;
+			poste4.translateY(1.8).translateZ(-1.4).translateX(1.4);
+			poste4.rotation.y= 90*Math.PI/180;
+            scene.add( tarima );
+			scene.add( poste );
+			scene.add( poste2 );
+			scene.add( poste3 );
+			scene.add( poste4 );
+
+			for(var i=4;i<9;i++){
+				for(var j=-4;j<4;j++){
+					var boxGeometry1 = new THREE.BoxGeometry( .5, .5, .5 );
+					var boxGeometry2 = new THREE.BoxGeometry( .5, .5, .2 );
+					var material_sillas= new THREE.MeshStandardMaterial( { color: 0xA74AC2, roughness: 10, opacity: 0.5  } );
+					var espaldar=new THREE.Mesh( boxGeometry2,material_sillas );
+					var asiento=new THREE.Mesh( boxGeometry1,material_sillas );
+					espaldar.translateY(.5).translateZ(.18);
+					asiento.add(espaldar);
+					//asiento.translateY(2);
+					
+					var x =Math.sqrt(Math.pow(i,2)-Math.pow(j,2))
+					//asiento.translateZ(j).translateX(x);
+					asiento.rotation.y= 90*Math.PI/180;
+					asiento.translateZ(j).translateX(x);
+					scene.add( asiento );
+					var asiento2=asiento.clone();
+					asiento.rotation.y= 180*Math.PI/180;
+					//asiento2.rotation.y= 90*Math.PI/180;
+					asiento2.translateX(-2*x);
+					scene.add( asiento2 );
+					asiento2.rotation.y=360*Math.PI/180;
+
+			   }
+			}
+
+
+			camera.position.x = 2;
+			camera.position.y = 2;
+		  	camera.position.z = 5;
+			camera.lookAt( origin );
+		}
+		function animate(){
+			requestAnimationFrame( animate );
+			controls.update();
+			render();
+		}
+		function render(){
+			renderer.render( scene, camera );
+		
+		}
+    </script>
+  </body>
+</html>

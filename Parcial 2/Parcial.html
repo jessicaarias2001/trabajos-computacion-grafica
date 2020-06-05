@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - interactive - voxel painter</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+body {
+				font-family: Monospace;
+				background-color: #000;
+				color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 100;
+				display:block;
+			}
+			#info a {
+				color: #046;
+				font-weight: bold;
+			}
+			button{
+			  background:#1AAB8A;
+			  color:#fff;
+			  border:none;
+			  position:absolute;
+			  height:5%;
+			  width:10%;
+			  font-size: 1em;
+			  padding:0 2em;
+			  cursor:pointer;
+			  transition:800ms ease all;
+			  outline:none;
+			}
+			button:hover{
+			  background:#ddd;
+			  color:#1AAB8A;
+			}
+			button:hover:before,button:hover:after{
+			  width:100%;
+			  transition:800ms ease all;
+			}
+			html, body { margin: 0; padding: 0; overflow: visible; }
+
+			
+		</style>
+		
+	</head>
+	<body>
+
+		<div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - voxel painter - webgl<br>
+			<strong>click</strong>: add voxel, <strong>shift + click</strong>: remove voxel
+		</div>
+		<div id="my-div">
+			<!--canvas id='canvas' width='500px' height='500px'></canvas-->
+			<button id='button' style="left:5%; top:10%" onClick="figura1()">FIGURA 1</button> 
+			<button id='button' style="left:5%; top:18%" onClick="figura2()">FIGURA 2</button> 
+			<button id='button' style="left:5%; top :26%" onClick="figura3()">FIGURA 3</button> 
+			<button id='button' style="left:5%; top:34%" onClick="figura4()">FIGURA 4</button> 
+			<button id='button' style="left:5%; top:42%" onClick="figura5()">FIGURA 5</button> 
+
+			<button id='button' style="left:5%; top:60%" onClick="amarillo()">AMARILLO</button> 
+			<button id='button' style="left:5%; top:68%" onClick="azul()">AZUL</button> 
+			<button id='button' style="left:5%; top:76%" onClick="rojo()">ROJO</button> 
+		</div>
+
+		<script src="js/three.js"></script>
+		<script src="js/csg.js"></script>
+		<script src="js/THREE.CSG.js"></script>
+		<script src="js/main.css"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+
+		<script src="js/Detector.js"></script>
+
+
+		<script>
+
+			var camera, scene, renderer, controls;
+			var startTime = Date.now();
+			var plane, stats;
+			var mouse, raycaster, isShiftDown = false;
+
+			var rollOverMesh, rollOverMaterial;
+
+			var boxGeometry,sphereGeometry, cubeMaterial, cilinderGeometry,cilinderGeometry2,  extrude1, extrude;
+			var cube, cilinder, esfera;
+
+			
+			var color, colorfigura;
+			var opcion = 1;
+			var color_asignado;
+			
+			var boxCSG, cilinderCSG,esferaCSG, result1, result2, C2T1, C2T2, extrudeCSG;
+			var voxel;
+
+			var objects = [];
+
+
+
+		  class CSG{	
+		  constructor( boxGeometry, GeoCili,sphereGeometry ){
+		    this.geometria = boxGeometry;
+			this.geometria1 = GeoCili;
+			this.geometria2 = sphereGeometry;
+			console.log(this.geometria);
+			console.log(this.geometria1);
+			console.log(this.geometria2);
+		  }  
+		  figura1(){	
+			
+			colorfigura = new THREE.MeshLambertMaterial( { color: color_asignado, side:THREE.DoubleSide } );
+			this.geometria.computeFaceNormals();
+			this.geometria1.computeFaceNormals();
+			this.geometria2.computeFaceNormals();
+			var cube = new THREE.Mesh( this.geometria );
+			var sphere = new THREE.Mesh( this.geometria2);
+			var cilindro1 = new THREE.Mesh( this.geometria1 );
+			var cilindro2 = new THREE.Mesh( this.geometria1 );
+			var cilindro3 = new THREE.Mesh( this.geometria1 );
+			
+			cilindro1.translateZ(2);
+			cilindro2.translateZ(2);
+			cilindro3.translateZ(2);
+			cilindro2.rotation.x=90*Math.PI/180;
+			cilindro3.rotation.z=90*Math.PI/180;
+			
+
+			var boxCSG = THREE.CSG.fromMesh( cube );
+			var sphereCSG = THREE.CSG.fromMesh( sphere );
+			var cilindro1CSG = THREE.CSG.fromMesh( cilindro1 );
+			var cilindro2CSG = THREE.CSG.fromMesh( cilindro2 );
+			var cilindro3CSG = THREE.CSG.fromMesh( cilindro3 );
+            
+			
+            var result1=sphereCSG.intersect( boxCSG );
+			var result2=cilindro1CSG.union( cilindro2CSG ).union(cilindro3CSG);
+
+			var C2T1 = THREE.CSG.toMesh( result1 );
+			var C2T2 = THREE.CSG.toMesh( result2 );
+			
+			C2T1.material = colorfigura ;
+			C2T2.material =colorfigura ;
+
+			C2T1.translateX(1.5).translateZ(1);
+			C2T2.translateX(1.5).translateZ(-1);
+
+			var C2T1CSG = THREE.CSG.fromMesh( C2T1 );
+			var C2T2CSG = THREE.CSG.fromMesh( C2T2 );
+			var result3=C2T1CSG.subtract( C2T2CSG );
+			var C2T3 = THREE.CSG.toMesh( result3 );
+			C2T3.material = colorfigura ;
+				
+			return C2T3;
+
+		  }
+		}
+
+
+
+
+		class CSG2{	
+		  constructor( sphereGeometry, cilinderGeometry ){
+		    this.geometria = sphereGeometry;
+			this.geometria2 = cilinderGeometry;
+			console.log(this.geometria);
+			console.log(this.geometria2);
+		  }  
+		  figura2(){	
+			
+
+			colorfigura = new THREE.MeshLambertMaterial( { color: color_asignado, side:THREE.DoubleSide } );
+			this.geometria.computeFaceNormals();
+			this.geometria2.computeFaceNormals();
+
+			esfera = new THREE.Mesh( this.geometria );
+			cilinder = new THREE.Mesh( this.geometria2 );
+
+
+			esfera.translateY(15);
+			cilinder.rotateX(90*Math.PI/180);
+
+			esferaCSG = THREE.CSG.fromMesh( esfera );
+			cilinderCSG = THREE.CSG.fromMesh( cilinder );
+			
+			
+
+			result1 = esferaCSG.intersect(cilinderCSG);
+
+			C2T1 = THREE.CSG.toMesh( result1 );
+
+			C2T1.material = colorfigura;		
+
+
+			return C2T1;
+
+		  }
+		}
+
+
+
+		class EXTRUDE1{	
+		  constructor( extrude1 ){
+		    this.geometria = extrude1;
+			console.log(this.geometria);
+		  }  
+		  figura3(){	
+			
+
+			colorfigura = new THREE.MeshLambertMaterial( { color:color_asignado, side:THREE.DoubleSide } );
+			var voxel1 = new THREE.Mesh( this.geometria, colorfigura );
+			//voxel1.rotateY(-90*Math.PI/180);
+
+			return voxel1;
+
+		  }
+		}
+
+
+
+
+		class EXTRUDE2{	
+		  constructor( extrude2 ){
+		    this.geometria = extrude2;
+			console.log(this.geometria);
+		  }  
+		  figura4(){	
+
+			colorfigura = new THREE.MeshLambertMaterial( { color:color_asignado, side:THREE.DoubleSide } );
+			var voxel1 = new THREE.Mesh( this.geometria, colorfigura );
+
+			return voxel1;
+
+		  }
+		}
+		class EXTRUDE3{	
+		  constructor( extrude3 ){
+		    this.geometria = extrude3;
+			console.log(this.geometria);
+		  }  
+		  figura5(){	
+
+			colorfigura = new THREE.MeshLambertMaterial( { color:color_asignado, side:THREE.DoubleSide } );
+			var voxel1 = new THREE.Mesh( this.geometria, colorfigura );
+
+			return voxel1;
+
+		  }
+		}
+
+			init();
+			render();
+
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 500, 800, 1300 );
+				camera.lookAt( 0, 0, 0 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xf0f0f0 );
+
+                // geometrias figura1 y figura2/////////////////////////////////////////
+				boxGeometry = new THREE.BoxBufferGeometry( 50, 50, 50);
+				cilinderGeometry2 = new THREE.CylinderBufferGeometry( 15, 15, 50, 75 );
+				sphereGeometry = new THREE.SphereGeometry( 30, 32, 32 );
+				
+				cilinderGeometry = new THREE.CylinderGeometry( 25, 25, 50, 70 );
+
+				//geometrias figura 3, 4 y 5-------------------------
+                // 3
+				var shape1 = new THREE.Shape();
+				shape1.moveTo(0,0);
+				shape1.lineTo(10,0);
+				shape1.lineTo(30,20);
+				shape1.lineTo(30,30);
+				shape1.lineTo(10,50);
+				shape1.lineTo(0,50);
+				shape1.lineTo(-20,30);
+				shape1.lineTo(-20,20);
+				shape1.lineTo(0,0);
+			
+			var extrudeSettings = {
+				steps: 1,
+				amount: 50,
+				bevelEnabled: true,
+				bevelThickness: 3,
+				bevelSize: 2,
+				bevelOffset: 0,
+				bevelSegments: 1
+			};
+
+			extrude1 = new THREE.ExtrudeGeometry( shape1, extrudeSettings );
+
+			//4       ////////////////////////////////////////////
+
+			
+			var curve2D = [];
+			curve2D[0] =new THREE.Vector2( 0, 0 );
+                curve2D[1] =new THREE.Vector2( 23, -2 );
+				curve2D[2] = new THREE.Vector2( 25, 10);
+                curve2D[3] =new THREE.Vector2( 3,17 );
+                curve2D[4] =new THREE.Vector2( -1, 5 );
+                curve2D[5] =new THREE.Vector2( 0, 0 );
+
+				
+			var shape2 = new THREE.Shape();
+			shape2.splineThru(curve2D);
+			shape2.moveTo(0,0);
+			shape2.lineTo(0,0);
+			shape2.lineTo(15,25);
+			shape2.lineTo(5,45);
+			
+			shape2.lineTo(-15,25);
+
+			extrude2 = new THREE.ExtrudeGeometry( shape2, extrudeSettings);
+            //  5     //////////////////////////////////////////////////////////////////
+			var curve2D_2 = [];
+			curve2D_2[0] =new THREE.Vector2( 0, 0 );
+                curve2D_2[1] =new THREE.Vector2( 23, -2 );
+				curve2D_2[2] = new THREE.Vector2( 25, 10);
+				curve2D_2[3] =new THREE.Vector2( 3,35 );
+				curve2D_2[4] = new THREE.Vector2( 10, 45);
+                curve2D_2[5] =new THREE.Vector2( 1, 45 );
+				curve2D_2[6] =new THREE.Vector2( 0, 0 );
+
+				var shape3 = new THREE.Shape();
+			shape3.splineThru(curve2D_2);
+			shape3.moveTo(0,0);
+
+
+			extrude3 = new THREE.ExtrudeGeometry( shape3, extrudeSettings);
+
+			//------------------------------------------------
+
+
+				// roll-over helpers
+
+				var rollOverGeo = new THREE.BoxBufferGeometry( 50,50,50 );
+
+				rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true,side:THREE.DoubleSide } );
+				rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+				scene.add( rollOverMesh );
+
+				// cubes
+
+			
+
+				var gridHelper = new THREE.GridHelper( 1000, 20 );
+				scene.add( gridHelper );
+
+				//
+
+				raycaster = new THREE.Raycaster();
+				mouse = new THREE.Vector2();
+
+				var geometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
+				geometry.rotateX( - Math.PI / 2 );
+
+				plane = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { visible: false } ) );
+				scene.add( plane );
+
+				objects.push( plane );
+
+				// lights
+
+				var ambientLight = new THREE.AmbientLight( 0x606060 );
+				scene.add( ambientLight );
+
+				var directionalLight = new THREE.DirectionalLight( 0xffffff );
+				directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
+				scene.add( directionalLight );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				document.addEventListener( 'keydown', onDocumentKeyDown, false );
+				document.addEventListener( 'keyup', onDocumentKeyUp, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			
+
+			function onDocumentMouseMove( event ) {
+
+				event.preventDefault();
+
+				mouse.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+
+				raycaster.setFromCamera( mouse, camera );
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					if (opcion == 1) {
+
+						var intersect = intersects[ 0 ];
+
+						rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+						rollOverMesh.position.divideScalar( 25 ).floor().multiplyScalar( 25 ).addScalar( 25 );
+					}
+
+					if (opcion == 2) {
+
+					var intersect = intersects[ 0 ];
+
+					rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+					rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+					}
+
+					if (opcion == 3) {
+						var intersect = intersects[ 0 ];
+
+						rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+						rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+					}
+
+					if (opcion == 4) {
+						var intersect = intersects[ 0 ];
+
+						rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+						rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+					}
+					if (opcion == 5) {
+						var intersect = intersects[ 0 ];
+
+						rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+						rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+					}
+
+				}
+
+				render();
+
+			}
+			
+			function figura1(){
+				opcion = 1;
+			}
+
+			function figura2(){
+				opcion = 2;
+			}
+
+			function figura3(){
+				opcion = 3;
+			}
+
+			function figura4(){
+				opcion = 4;
+			}
+			function figura5(){
+				opcion = 5;
+			}
+
+
+			function amarillo(){
+				color_asignado = 0xE2E90C;
+			}
+
+			function azul(){
+				color_asignado = 0x1F3FF3;
+			}
+
+			function rojo(){
+				color_asignado = 0xFA1F29;
+			}
+
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				mouse.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+
+				raycaster.setFromCamera( mouse, camera );
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					var intersect = intersects[ 0 ];
+
+					// delete cube
+
+					if ( isShiftDown ) {
+
+						if ( intersect.object !== plane ) {
+
+							scene.remove( intersect.object );
+
+							objects.splice( objects.indexOf( intersect.object ), 1 );
+
+						}
+
+						// create cube
+
+					} else {
+
+						switch(opcion){
+							case 1:
+							    voxel = new CSG(boxGeometry, cilinderGeometry2,sphereGeometry);	
+						        voxel = voxel.figura1();
+						        voxel.position.copy( intersect.point ).add( intersect.face.normal );
+						        voxel.position.divideScalar( 27 ).floor().multiplyScalar( 25 ).addScalar( 25 );
+
+						        scene.add( voxel );
+
+						        objects.push( voxel );
+							  break;
+							case 2:
+							    voxel = new CSG2(sphereGeometry, cilinderGeometry);	
+						        voxel = voxel.figura2();
+						        voxel.position.copy( intersect.point ).add( intersect.face.normal );
+						        voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+
+						        scene.add( voxel );
+
+								objects.push( voxel );
+							  break;
+
+							 case 3: 
+							    voxel = new EXTRUDE1(extrude1);	
+						        voxel = voxel.figura3();
+						        voxel.position.copy( intersect.point ).add( intersect.face.normal );
+						        voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar(0);
+
+						        scene.add( voxel );
+
+								objects.push( voxel );
+								break;
+							case 4:
+							    voxel = new EXTRUDE2(extrude2);	
+						        voxel = voxel.figura4();
+						        voxel.position.copy( intersect.point ).add( intersect.face.normal );
+						        voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar(0);
+
+						        scene.add( voxel );
+
+								objects.push( voxel );
+								break;
+							case 5:
+							    voxel = new EXTRUDE3(extrude3);	
+						        voxel = voxel.figura5();
+						        voxel.position.copy( intersect.point ).add( intersect.face.normal );
+						        voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar(0);
+
+						        scene.add( voxel );
+
+								objects.push( voxel );
+								break;
+
+						}
+					}
+
+					render();
+
+				}
+
+			}
+
+			function onDocumentKeyDown( event ) {
+
+				switch ( event.keyCode ) {
+
+					case 16: isShiftDown = true; break;
+
+				}
+
+			}
+
+			function onDocumentKeyUp( event ) {
+
+				switch ( event.keyCode ) {
+
+					case 16: isShiftDown = false; break;
+
+				}
+
+			}
+
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>

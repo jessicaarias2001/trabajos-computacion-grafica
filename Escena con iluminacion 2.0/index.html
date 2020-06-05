@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ILUMINACION</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
+	<script src="js/csg.js"></script>
+	<script src="js/THREE.CSG.js"></script>
+    <script>
+		var scene, aspect, camera, renderer, controls;
+	
+		
+		init();
+		animate();
+		
+		function init(){
+			//INICIALIZACIÓN
+			
+			
+	        scene = new THREE.Scene();
+	        aspect = window.innerWidth / window.innerHeight;
+	        camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000);
+	        renderer = new THREE.WebGLRenderer();
+	        renderer.setSize( window.innerWidth, window.innerHeight );
+	        document.body.appendChild( renderer.domElement );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+			
+			//ELEMENTOS COMUNES
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+		  	var color = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA3333 );
+		  	var colorG = new THREE.Color( 0x33AA33 );
+		  	var colorB = new THREE.Color( 0x333366 );
+			
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+			scene.add( axesHelper );
+			
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color, color );
+			scene.add( gridHelperXZ );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+
+            // ILUMINACIÓN AMBIENTE
+            var ambient = new THREE.AmbientLight( 0xffffff, .5 );
+            //scene.add( ambient );
+			
+            // LUCES DE LAS LLANTAS
+			var toroidegeometry2 = new THREE.TorusBufferGeometry( .18, .05, 16, 50 );
+			var	bulbLight = new THREE.PointLight( 0x0620FF,5, 2, 2 );
+
+
+			var	bulbMat = new THREE.MeshStandardMaterial( {
+					emissive: 0x0620FF,
+					emissiveIntensity: 1,
+					color: 0x0620FF
+					//hemiIrradiance: Object.keys( 5000 )
+				} );
+				bulbLight.add( new THREE.Mesh( toroidegeometry2, bulbMat ) );
+				bulbLight.position.set( -1.6, .43, 3.5 );
+				bulbLight.castShadow = true;
+				bulbLight.rotation.y = 120*Math.PI/180;
+			    bulbLight.rotation.x= -30*Math.PI/180;
+				var bulbLight2=bulbLight.clone();
+				bulbLight2.position.set(-2.2,.43,2.5);
+
+
+				scene.add( bulbLight );
+				scene.add( bulbLight2 );
+
+
+				var sphereSize = 1;
+		    var spotLight = new THREE.SpotLight( 0xFF5100,4,8,180*Math.PI/180);
+            spotLight.position.set( 0, 1.5, -8 );	
+		    scene.add( spotLight )	
+	
+			
+			//OBJETO- LLANTAS, TECHO Y PISO
+			var boxGeometry = new THREE.BoxGeometry( 10, .1, 15 );
+
+			var toroidegeometry = new THREE.TorusBufferGeometry( .3, .1, 16, 50 );
+            var linematerial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+			var material2 = new THREE.MeshStandardMaterial( { color: colorG, metalness: 0.5, roughness: 0.1, transparent:true, opacity: 0.5  } );
+			var material_piso= new THREE.MeshStandardMaterial( { color: 0x797A6F, roughness: 10, opacity: 0.5  } );
+			var llantasmaterial = new THREE.MeshStandardMaterial( { color: 0x282727, opacity: 1} );
+
+
+			var piso=new THREE.Mesh( boxGeometry,material_piso );
+			piso.translateZ(-2.5);
+			var techo= piso.clone();
+			//
+			
+			var llanta1=new THREE.Mesh( toroidegeometry,llantasmaterial);
+			var llanta2=llanta1.clone();
+			var caja1=new THREE.Mesh( boxGeometry,material_piso );
+			caja1.rotation.x= 90*Math.PI/180;
+			caja1.scale.z=1/15;
+			caja1.scale.y=3;
+			caja1.translateY(-4).translateZ(-.5) ;
+			var caja2=caja1.clone();
+			caja2.translateY(-6).translateZ(-.5) ;
+			caja2.scale.z=2/15;
+
+            techo.translateY(2.5);
+			techo.translateZ(2.5);
+            llanta1.translateZ(3.5).translateY(.43).translateX(-1.6) ;
+			llanta2.translateZ(2.5).translateY(.43).translateX(-2.2) ;
+			llanta1.rotation.y = 120*Math.PI/180;
+			llanta2.rotation.y = 120*Math.PI/180;
+			llanta1.rotation.x= -30*Math.PI/180;
+			llanta2.rotation.x = -30*Math.PI/180;
+			techo.scale.z=.66;
+
+			scene.add(piso);
+			scene.add(techo);
+			scene.add(llanta1);
+			scene.add(llanta2);
+			scene.add(caja1);
+			scene.add(caja2);
+
+			var parent = new THREE.Object3D();
+			
+			//LUCES DEL TECHO
+			for(var i=-2; i<=2; i++){
+				for(var j=0; j<2; j++){
+				var	pointLight = new THREE.PointLight( 0x06FBFF,  0.7, 2, 0 );
+				var lucesGeometry = new THREE.BoxGeometry( 3, .1, .5 );
+				var	luzmaterial = new THREE.MeshStandardMaterial( {
+					emissive: 0x8CFFF4,
+				    emissiveIntensity: 1,
+					color: 0xA6FFFC
+					
+					
+				} );
+				pointLight.add( new THREE.Mesh( lucesGeometry, luzmaterial ) );
+				if(j==1){
+					pointLight.applyMatrix(new THREE.Matrix4().makeTranslation(2.5, 2.3, i*1.5));
+			    } 
+				else
+				pointLight.applyMatrix(new THREE.Matrix4().makeTranslation(-2.5, 2.3, i*1.5));
+				pointLight.material = material2;
+				pointLight.decay = 2;
+				pointLight.distance = 10
+ 
+
+			
+				parent.add(pointLight);
+			    }
+			}
+			
+			
+			
+			scene.add( parent );						
+
+			camera.position.x = 2;
+			camera.position.y = 2;
+		  	camera.position.z = 5;
+			camera.lookAt( origin );
+		}
+		function animate(){
+			requestAnimationFrame( animate );
+			controls.update();
+			render();
+		}
+		function render(){
+			renderer.render( scene, camera );
+			
+		}
+    </script>
+  </body>
+</html>
